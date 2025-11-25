@@ -1,0 +1,248 @@
+/* Modern Design System for Skill Trainer */
+
+/* Base Styles */
+:root {
+  color-scheme: dark;
+  --app-bg: #09090b;
+  --card-bg: #18181b;
+  --card-hover: #27272a;
+  --border-subtle: #27272a;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+}
+
+/* Smooth animations */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--app-bg);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* Better touch handling */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area handling for notched devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Card hover effects */
+.card-interactive {
+  transition: all 200ms ease-out;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+}
+
+/* Progress ring animation */
+.progress-ring circle {
+  transition: stroke-dashoffset 500ms ease-in-out;
+}
+
+/* Slider styling */
+.slider-modern {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.slider-modern::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 2px solid #18181b;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.slider-modern::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.slider-modern::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 2px solid #18181b;
+}
+
+/* Gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.gradient-confidence {
+  background: linear-gradient(to right,
+    #71717a 0%,
+    #ef4444 14%,
+    #f97316 28%,
+    #eab308 42%,
+    #84cc16 56%,
+    #22c55e 70%,
+    #14b8a6 84%,
+    #3b82f6 100%
+  );
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(24, 24, 27, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Subtle glow effect */
+.glow-primary {
+  box-shadow: 0 0 40px -10px rgba(34, 197, 94, 0.3);
+}
+
+/* Empty state styling */
+.empty-state-icon {
+  background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
+  border-radius: 24px;
+  padding: 24px;
+  display: inline-flex;
+}
+
+/* Bottom navigation styling */
+.bottom-nav-item {
+  min-width: 72px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 200ms ease;
+}
+
+.bottom-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bottom-nav-item.active {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+/* Level badge colors */
+.level-0 { --badge-color: #71717a; }
+.level-1 { --badge-color: #ef4444; }
+.level-2 { --badge-color: #f97316; }
+.level-3 { --badge-color: #eab308; }
+.level-4 { --badge-color: #84cc16; }
+.level-5 { --badge-color: #22c55e; }
+.level-6 { --badge-color: #14b8a6; }
+.level-7 { --badge-color: #3b82f6; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-out forwards;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Responsive container */
+.container-app {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-app {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-app {
+    max-width: 768px;
+  }
+}

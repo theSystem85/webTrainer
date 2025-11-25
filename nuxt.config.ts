@@ -9,6 +9,15 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
-    '@nuxt/ui'
-  ]
+    '@nuxt/ui',
+    '@nuxt/fonts'
+  ],
+
+  css: ['~/assets/css/main.css'],
+
+  fonts: {
+    families: [
+      { name: 'Inter', provider: 'google', weights: [400, 500, 600, 700] }
+    ]
+  }
 })
