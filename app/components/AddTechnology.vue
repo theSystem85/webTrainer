@@ -17,35 +17,156 @@
           </UInput>
         </UFormField>
 
-        <!-- URL Input -->
-        <UFormField label="Documentation URL" description="Optional: Paste a docs URL to auto-fetch topics">
-          <UInput
-            v-model="url"
-            placeholder="https://docs.example.com/api"
-            size="xl"
-            class="rounded-xl"
-            :disabled="isLoading"
+        <!-- Input Mode Toggle -->
+        <div class="flex gap-2 p-1 bg-zinc-800/50 rounded-xl">
+          <UButton
+            :variant="inputMode === 'url' ? 'solid' : 'ghost'"
+            size="sm"
+            class="flex-1 rounded-lg"
+            @click="inputMode = 'url'"
           >
-            <template #leading>
-              <UIcon name="i-lucide-link" class="text-zinc-500" />
-            </template>
-          </UInput>
-        </UFormField>
+            <UIcon name="i-lucide-link" class="mr-2" />
+            Fetch from URL
+          </UButton>
+          <UButton
+            :variant="inputMode === 'text' ? 'solid' : 'ghost'"
+            size="sm"
+            class="flex-1 rounded-lg"
+            @click="inputMode = 'text'"
+          >
+            <UIcon name="i-lucide-file-text" class="mr-2" />
+            Paste Docs Text
+          </UButton>
+        </div>
 
-        <!-- Fetch Button -->
-        <UButton
-          v-if="url"
-          block
-          size="xl"
-          variant="soft"
-          :loading="isLoading"
-          :disabled="!url || !name"
-          class="rounded-xl h-14 font-medium"
-          @click="fetchStructure"
-        >
-          <UIcon name="i-lucide-download" class="mr-2 text-lg" />
-          Fetch Documentation Structure
-        </UButton>
+        <!-- URL Input Mode -->
+        <template v-if="inputMode === 'url'">
+          <UFormField label="Documentation URL" description="Paste a docs URL to auto-fetch topics">
+            <UInput
+              v-model="url"
+              placeholder="https://docs.example.com/api"
+              size="xl"
+              class="rounded-xl"
+              :disabled="isLoading"
+            >
+              <template #leading>
+                <UIcon name="i-lucide-link" class="text-zinc-500" />
+              </template>
+            </UInput>
+          </UFormField>
+
+          <UButton
+            v-if="url"
+            block
+            size="xl"
+            variant="soft"
+            :loading="isLoading"
+            :disabled="!url || !name"
+            class="rounded-xl h-14 font-medium"
+            @click="fetchStructure"
+          >
+            <UIcon name="i-lucide-download" class="mr-2 text-lg" />
+            Fetch Documentation Structure
+          </UButton>
+        </template>
+
+        <!-- Text Paste Mode -->
+        <template v-if="inputMode === 'text'">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Text Input Side -->
+            <div class="space-y-3">
+              <UFormField label="Docs Content" description="Paste text from a documentation page (sidebar, ToC, etc.)">
+                <UTextarea
+                  v-model="docsText"
+                  placeholder="Paste documentation text here...
+
+Examples of formats that work:
+• useAsyncData
+• useFetch
+• useHead
+
+Or: useAsyncData | useFetch | useHead
+
+Or:
+- useAsyncData
+- useFetch
+- useHead
+
+Or:
+1. useAsyncData
+2. useFetch
+3. useHead"
+                  :rows="12"
+                  class="rounded-xl font-mono text-sm"
+                  :disabled="isLoading"
+                />
+              </UFormField>
+              <UButton
+                block
+                size="lg"
+                variant="soft"
+                :disabled="!docsText.trim()"
+                class="rounded-xl"
+                @click="parseDocsText"
+              >
+                <UIcon name="i-lucide-scan-text" class="mr-2" />
+                Parse Topics
+              </UButton>
+            </div>
+
+            <!-- Preview Side -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-sm font-medium text-zinc-300">
+                  Parse Preview
+                  <span v-if="parsedTopics.length > 0" class="text-zinc-500 ml-2">
+                    ({{ parsedTopics.length }} topics)
+                  </span>
+                </label>
+                <div v-if="parsedTopics.length > 0" class="flex gap-2">
+                  <UButton
+                    variant="ghost"
+                    size="xs"
+                    class="rounded-lg"
+                    @click="toggleAllParsed"
+                  >
+                    {{ allParsedSelected ? 'Deselect All' : 'Select All' }}
+                  </UButton>
+                  <UButton
+                    variant="soft"
+                    color="primary"
+                    size="xs"
+                    class="rounded-lg"
+                    :disabled="!parsedTopics.some(t => t.selected)"
+                    @click="addParsedToFetched"
+                  >
+                    <UIcon name="i-lucide-plus" class="mr-1" />
+                    Add Selected
+                  </UButton>
+                </div>
+              </div>
+              
+              <div class="h-[300px] overflow-y-auto bg-zinc-800/40 rounded-xl border border-zinc-700/40 p-3 space-y-1">
+                <template v-if="parsedTopics.length > 0">
+                  <label
+                    v-for="(topic, idx) in parsedTopics"
+                    :key="idx"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-zinc-700/40 transition-colors"
+                  >
+                    <UCheckbox v-model="topic.selected" />
+                    <span class="text-sm font-mono">{{ topic.name }}</span>
+                  </label>
+                </template>
+                <div v-else class="h-full flex items-center justify-center text-zinc-500 text-sm">
+                  <div class="text-center space-y-2">
+                    <UIcon name="i-lucide-scan-text" class="text-2xl opacity-50" />
+                    <p>Paste docs text and click "Parse Topics"</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
 
         <!-- Manual Entry Section -->
         <div class="pt-2">
@@ -174,6 +295,7 @@ const emit = defineEmits<{
 
 const { addTechnology } = useSkillStore()
 
+const inputMode = ref<'url' | 'text'>('url')
 const url = ref('')
 const name = ref('')
 const isLoading = ref(false)
@@ -181,6 +303,8 @@ const error = ref('')
 const newTopic = ref('')
 const manualTopics = ref<string[]>([])
 const fetchedTopics = ref<Array<{ name: string; path: string; selected: boolean }>>([])
+const docsText = ref('')
+const parsedTopics = ref<Array<{ name: string; selected: boolean }>>([])
 
 const totalTopics = computed(() => {
   const fetchedCount = fetchedTopics.value.filter(t => t.selected).length
@@ -195,9 +319,18 @@ const allFetchedSelected = computed(() => {
   return fetchedTopics.value.length > 0 && fetchedTopics.value.every(t => t.selected)
 })
 
+const allParsedSelected = computed(() => {
+  return parsedTopics.value.length > 0 && parsedTopics.value.every(t => t.selected)
+})
+
 function toggleAllFetched() {
   const newValue = !allFetchedSelected.value
   fetchedTopics.value.forEach(t => t.selected = newValue)
+}
+
+function toggleAllParsed() {
+  const newValue = !allParsedSelected.value
+  parsedTopics.value.forEach(t => t.selected = newValue)
 }
 
 function addManualTopic() {
@@ -205,6 +338,139 @@ function addManualTopic() {
     manualTopics.value.push(newTopic.value.trim())
     newTopic.value = ''
   }
+}
+
+/**
+ * Generic topic parser that handles various separator patterns:
+ * - Line breaks (one topic per line)
+ * - Bullet points (•, -, *, ▪, ▸, ►, etc.)
+ * - Numbered lists (1., 2., 1), 2), etc.)
+ * - Pipe separators (|)
+ * - Comma separators
+ * - Tab separators
+ * - Markdown headers (##, ###)
+ * - Link text patterns [text](url)
+ */
+function parseDocsText() {
+  const text = docsText.value.trim()
+  if (!text) {
+    parsedTopics.value = []
+    return
+  }
+
+  // Set of topics to avoid duplicates
+  const topicSet = new Set<string>()
+
+  // First, try to detect the primary separator pattern
+  const lines = text.split(/\n/)
+  
+  for (const line of lines) {
+    let cleanLine = line.trim()
+    
+    // Skip empty lines
+    if (!cleanLine) continue
+    
+    // Remove markdown header prefixes (##, ###, etc.)
+    cleanLine = cleanLine.replace(/^#{1,6}\s+/, '')
+    
+    // Remove bullet point prefixes (various styles)
+    cleanLine = cleanLine.replace(/^[•\-*▪▸►→➤◦○●◆◇★☆✓✔✗✘]\s*/, '')
+    
+    // Remove numbered list prefixes (1., 2., 1), 2), etc.)
+    cleanLine = cleanLine.replace(/^\d+[.)]\s*/, '')
+    
+    // Remove checkbox patterns [ ], [x], [X]
+    cleanLine = cleanLine.replace(/^\[[\sxX]?\]\s*/, '')
+    
+    // Extract text from markdown links [text](url)
+    const linkMatch = cleanLine.match(/\[([^\]]+)\]\([^)]+\)/)
+    if (linkMatch) {
+      cleanLine = linkMatch[1]
+    }
+    
+    // Check if line contains inline separators (|, commas, tabs)
+    if (cleanLine.includes('|')) {
+      // Pipe-separated values
+      const parts = cleanLine.split('|').map(p => p.trim()).filter(p => p && p.length > 1)
+      parts.forEach(p => topicSet.add(cleanTopic(p)))
+    } else if (cleanLine.includes('\t')) {
+      // Tab-separated values
+      const parts = cleanLine.split('\t').map(p => p.trim()).filter(p => p && p.length > 1)
+      parts.forEach(p => topicSet.add(cleanTopic(p)))
+    } else if (cleanLine.includes(',') && !cleanLine.includes(' ')) {
+      // Comma-separated (only if no spaces, to avoid breaking sentences)
+      const parts = cleanLine.split(',').map(p => p.trim()).filter(p => p && p.length > 1)
+      parts.forEach(p => topicSet.add(cleanTopic(p)))
+    } else if (cleanLine.includes(', ') && cleanLine.split(', ').length > 2) {
+      // Comma-space separated list (at least 3 items suggests it's a list)
+      const parts = cleanLine.split(', ').map(p => p.trim()).filter(p => p && p.length > 1)
+      parts.forEach(p => topicSet.add(cleanTopic(p)))
+    } else {
+      // Single topic on this line
+      const cleaned = cleanTopic(cleanLine)
+      if (cleaned) {
+        topicSet.add(cleaned)
+      }
+    }
+  }
+
+  // Convert to array and create topic objects
+  parsedTopics.value = Array.from(topicSet)
+    .filter(t => t.length >= 2 && t.length <= 100) // Reasonable length limits
+    .map(name => ({ name, selected: true }))
+}
+
+/**
+ * Clean up a topic string by removing common unwanted patterns
+ */
+function cleanTopic(text: string): string {
+  let cleaned = text.trim()
+  
+  // Remove trailing punctuation (except parentheses which might be part of function names)
+  cleaned = cleaned.replace(/[:.,;]+$/, '')
+  
+  // Remove leading/trailing quotes
+  cleaned = cleaned.replace(/^["'`]+|["'`]+$/g, '')
+  
+  // Remove common noise words that appear alone
+  const noisePatterns = [
+    /^(home|github|twitter|discord|blog|search|menu|navigation|sidebar|footer|header|copyright|all rights reserved)$/i,
+    /^(next|prev|previous|back|forward|skip|close|open|expand|collapse|toggle)$/i,
+    /^(loading|please wait|error|success|warning|info)$/i,
+    /^\d+$/, // Just numbers
+    /^[^\w]+$/, // No word characters
+  ]
+  
+  for (const pattern of noisePatterns) {
+    if (pattern.test(cleaned)) {
+      return ''
+    }
+  }
+  
+  return cleaned
+}
+
+/**
+ * Add selected parsed topics to the fetched topics list
+ */
+function addParsedToFetched() {
+  const selectedParsed = parsedTopics.value.filter(t => t.selected)
+  const existingNames = new Set(fetchedTopics.value.map(t => t.name.toLowerCase()))
+  
+  for (const topic of selectedParsed) {
+    if (!existingNames.has(topic.name.toLowerCase())) {
+      fetchedTopics.value.push({
+        name: topic.name,
+        path: '',
+        selected: true
+      })
+      existingNames.add(topic.name.toLowerCase())
+    }
+  }
+  
+  // Clear parsed topics after adding
+  parsedTopics.value = []
+  docsText.value = ''
 }
 
 async function fetchStructure() {
@@ -263,6 +529,8 @@ function saveTechnology() {
   name.value = ''
   manualTopics.value = []
   fetchedTopics.value = []
+  parsedTopics.value = []
+  docsText.value = ''
   error.value = ''
 }
 </script>
