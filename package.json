@@ -20,6 +20,7 @@
     "@nuxt/ui": "4.2.1",
     "@tailwindcss/vite": "^4.1.17",
     "@unhead/vue": "^2.0.3",
+    "@vite-pwa/nuxt": "^1.0.7",
     "better-sqlite3": "^12.4.6",
     "nuxt": "^4.2.1",
     "tailwindcss": "^4.1.17",
