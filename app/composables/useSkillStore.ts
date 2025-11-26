@@ -30,6 +30,12 @@ export interface QuizResult {
   timestamp: number
 }
 
+export interface TopicHistory {
+  topicId: string
+  assessmentCount: number
+  lastAssessedAt: number
+}
+
 // Confidence levels with descriptions
 export const CONFIDENCE_LEVELS = [
   { level: 0, label: 'Never heard of it', shortLabel: 'New', color: 'gray', description: 'This is completely new to me' },
@@ -46,6 +52,7 @@ const STORAGE_KEYS = {
   technologies: 'skillTrainer_technologies',
   assessments: 'skillTrainer_assessments',
   quizResults: 'skillTrainer_quizResults',
+  topicHistory: 'skillTrainer_topicHistory',
   settings: 'skillTrainer_settings'
 }
 
@@ -53,6 +60,7 @@ const STORAGE_KEYS = {
 let technologies = ref<Technology[]>([])
 let assessments = ref<Assessment[]>([])
 let quizResults = ref<QuizResult[]>([])
+let topicHistory = ref<TopicHistory[]>([])
 let isLoaded = ref(false)
 
 if (import.meta.hot) {
@@ -61,11 +69,13 @@ if (import.meta.hot) {
     import.meta.hot.data.technologies = technologies
     import.meta.hot.data.assessments = assessments
     import.meta.hot.data.quizResults = quizResults
+    import.meta.hot.data.topicHistory = topicHistory
     import.meta.hot.data.isLoaded = isLoaded
   } else {
     technologies = import.meta.hot.data.technologies
     assessments = import.meta.hot.data.assessments
     quizResults = import.meta.hot.data.quizResults
+    topicHistory = import.meta.hot.data.topicHistory
     isLoaded = import.meta.hot.data.isLoaded
   }
 }
@@ -84,6 +94,9 @@ function loadFromStorage() {
 
     const storedQuiz = localStorage.getItem(STORAGE_KEYS.quizResults)
     if (storedQuiz) quizResults.value = JSON.parse(storedQuiz)
+
+    const storedHistory = localStorage.getItem(STORAGE_KEYS.topicHistory)
+    if (storedHistory) topicHistory.value = JSON.parse(storedHistory)
   }
   catch (e) {
     console.error('Failed to load from storage:', e)
@@ -100,6 +113,7 @@ function saveToStorage() {
     localStorage.setItem(STORAGE_KEYS.technologies, JSON.stringify(technologies.value))
     localStorage.setItem(STORAGE_KEYS.assessments, JSON.stringify(assessments.value))
     localStorage.setItem(STORAGE_KEYS.quizResults, JSON.stringify(quizResults.value))
+    localStorage.setItem(STORAGE_KEYS.topicHistory, JSON.stringify(topicHistory.value))
   }
   catch (e) {
     console.error('Failed to save to storage:', e)
@@ -111,7 +125,7 @@ export function useSkillStore() {
   loadFromStorage()
 
   // Watch for changes and persist
-  watch([technologies, assessments, quizResults], saveToStorage, { deep: true })
+  watch([technologies, assessments, quizResults, topicHistory], saveToStorage, { deep: true })
 
   // Computed
   const getTechnologyById = computed(() => {
@@ -196,6 +210,12 @@ export function useSkillStore() {
     }
   })
 
+  const getTopicHistory = computed(() => {
+    return (topicId: string): TopicHistory | null => {
+      return topicHistory.value.find(h => h.topicId === topicId) || null
+    }
+  })
+
   // Actions
   function addTechnology(tech: Omit<Technology, 'id' | 'createdAt'>) {
     const newTech: Technology = {
@@ -238,15 +258,38 @@ export function useSkillStore() {
     const tech = technologies.value.find(t => t.id === techId)
     if (tech) {
       tech.topics = tech.topics.filter(t => t.id !== topicId)
+
+      // remove related assessments
+      assessments.value = assessments.value.filter(a => a.topicId !== topicId)
+
+      // remove related quiz results
+      quizResults.value = quizResults.value.filter(q => q.topicId !== topicId)
+
+      // remove topic history entries
+      topicHistory.value = topicHistory.value.filter(h => h.topicId !== topicId)
     }
   }
 
   function saveAssessment(topicId: string, level: number) {
+    const now = Date.now()
     assessments.value.push({
       topicId,
       level,
-      timestamp: Date.now()
+      timestamp: now
     })
+
+    // Update topic history
+    const existingHistory = topicHistory.value.find(h => h.topicId === topicId)
+    if (existingHistory) {
+      existingHistory.assessmentCount++
+      existingHistory.lastAssessedAt = now
+    } else {
+      topicHistory.value.push({
+        topicId,
+        assessmentCount: 1,
+        lastAssessedAt: now
+      })
+    }
   }
 
   function saveQuizResult(result: Omit<QuizResult, 'timestamp'>) {
@@ -261,6 +304,7 @@ export function useSkillStore() {
       technologies: technologies.value,
       assessments: assessments.value,
       quizResults: quizResults.value,
+      topicHistory: topicHistory.value,
       exportedAt: Date.now()
     }, null, 2)
   }
@@ -271,6 +315,7 @@ export function useSkillStore() {
       if (data.technologies) technologies.value = data.technologies
       if (data.assessments) assessments.value = data.assessments
       if (data.quizResults) quizResults.value = data.quizResults
+      if (data.topicHistory) topicHistory.value = data.topicHistory
       return true
     }
     catch {
@@ -282,6 +327,7 @@ export function useSkillStore() {
     technologies.value = []
     assessments.value = []
     quizResults.value = []
+    topicHistory.value = []
   }
 
   return {
@@ -289,6 +335,7 @@ export function useSkillStore() {
     technologies,
     assessments,
     quizResults,
+    topicHistory,
     isLoaded,
 
     // Computed
@@ -298,6 +345,7 @@ export function useSkillStore() {
     getLevelDistribution,
     getUnassessedTopics,
     getWeakTopics,
+    getTopicHistory,
 
     // Actions
     addTechnology,

@@ -94,8 +94,8 @@
       </template>
     </ClientOnly>
 
-    <!-- Delete Confirmation Modal -->
-    <UModal v-model="showDeleteConfirm">
+    <!-- Delete Confirmation Modal (render only when we have a topic selected) -->
+    <UModal v-if="showDeleteConfirm && techToDelete" v-model="showDeleteConfirm">
       <UCard>
         <template #header>
           <div class="flex items-center gap-4">
@@ -114,7 +114,7 @@
         </p>
         <template #footer>
           <div class="flex gap-3 justify-end">
-            <UButton variant="ghost" color="neutral" size="lg" class="rounded-xl" @click="showDeleteConfirm = false">
+            <UButton variant="ghost" color="neutral" size="lg" class="rounded-xl" @click="cancelDelete">
               Cancel
             </UButton>
             <UButton color="error" size="lg" class="rounded-xl font-medium" @click="doDelete">
@@ -125,6 +125,13 @@
         </template>
       </UCard>
     </UModal>
+
+    <!-- Success message after delete -->
+    <div v-if="successMessage" class="mt-4">
+      <UAlert color="success" variant="soft" class="rounded-xl">
+        {{ successMessage }}
+      </UAlert>
+    </div>
   </div>
 </template>
 
@@ -141,6 +148,7 @@ const { technologies, getTechnologyProgress, deleteTechnology } = useSkillStore(
 
 const showDeleteConfirm = ref(false)
 const techToDelete = ref<Technology | null>(null)
+const successMessage = ref('')
 
 const circumference = 2 * Math.PI * 26
 
@@ -163,7 +171,28 @@ function doDelete() {
   if (techToDelete.value) {
     deleteTechnology(techToDelete.value.id)
   }
+  // show success message and cleanup after closing modal
+  const name = techToDelete.value?.name || 'Technology'
+  // close modal (unmount thanks to v-if)
   showDeleteConfirm.value = false
+
+  // set success message
+  successMessage.value = `${name} deleted`
+
+  // clear selected tech after short delay to avoid UI flash
+  setTimeout(() => {
+    techToDelete.value = null
+  }, 200)
+
+  // clear success message after a few seconds
+  setTimeout(() => {
+    successMessage.value = ''
+  }, 3000)
+}
+
+function cancelDelete() {
+  showDeleteConfirm.value = false
+  // clear selected tech in case user cancelled
   techToDelete.value = null
 }
 </script>

@@ -115,7 +115,9 @@
         <SkillAssessment
           v-show="currentView === 'assess' && selectedTechId"
           :tech-id="selectedTechId || ''"
+          :initial-topic-index="currentTopicIndex"
           @view-overview="currentView = 'overview'"
+          @topic-index-change="onTopicIndexChange"
         />
 
         <!-- Overview View -->
@@ -202,16 +204,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useSkillStore } from '../composables/useSkillStore'
 
 type ViewType = 'home' | 'add' | 'detail' | 'assess' | 'overview' | 'quiz' | 'settings'
 
+const route = useRoute()
+const router = useRouter()
 const { getTechnologyById } = useSkillStore()
 
 const currentView = ref<ViewType>('home')
 const selectedTechId = ref<string | null>(null)
 const previousView = ref<ViewType>('home')
+const currentTopicIndex = ref(0)
+
+// Restore state from URL query params on mount
+onMounted(() => {
+  const q = route.query
+  if (q.view && isValidView(String(q.view))) {
+    currentView.value = String(q.view) as ViewType
+  }
+  if (q.tech) {
+    selectedTechId.value = String(q.tech)
+  }
+  if (q.topic) {
+    currentTopicIndex.value = parseInt(String(q.topic)) || 0
+  }
+})
+
+function isValidView(v: string): v is ViewType {
+  return ['home', 'add', 'detail', 'assess', 'overview', 'quiz', 'settings'].includes(v)
+}
+
+// Sync state to URL when it changes
+watch([currentView, selectedTechId, currentTopicIndex], () => {
+  const query: Record<string, string> = {}
+  if (currentView.value !== 'home') {
+    query.view = currentView.value
+  }
+  if (selectedTechId.value && currentView.value !== 'home' && currentView.value !== 'add' && currentView.value !== 'settings') {
+    query.tech = selectedTechId.value
+  }
+  if (currentView.value === 'assess' && currentTopicIndex.value > 0) {
+    query.topic = String(currentTopicIndex.value)
+  }
+  router.replace({ query })
+}, { deep: true })
 
 const selectedTechnology = computed(() => {
   if (!selectedTechId.value) return null
@@ -258,6 +296,10 @@ function onTechnologySaved(techId: string) {
 
 function startAssessmentFromTopic(_topicId: string) {
   currentView.value = 'assess'
+}
+
+function onTopicIndexChange(index: number) {
+  currentTopicIndex.value = index
 }
 
 function goBack() {
