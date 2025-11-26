@@ -1,21 +1,21 @@
 <template>
-  <div class="skill-overview animate-fade-in space-y-4">
+  <div class="skill-overview animate-fade-in space-y-5">
     <!-- Summary Stats -->
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-2 gap-4">
       <UCard class="overflow-hidden">
-        <div class="text-center py-2">
-          <div class="text-3xl font-bold text-primary mb-1">
+        <div class="text-center py-4">
+          <div class="text-4xl font-bold text-primary-400 mb-2">
             {{ progress.assessed }}
           </div>
-          <div class="text-xs text-zinc-500 uppercase tracking-wide">Assessed</div>
+          <div class="text-xs text-zinc-500 uppercase tracking-wider font-medium">Assessed</div>
         </div>
       </UCard>
       <UCard class="overflow-hidden">
-        <div class="text-center py-2">
-          <div class="text-3xl font-bold mb-1" :style="{ color: avgLevelColor }">
+        <div class="text-center py-4">
+          <div class="text-4xl font-bold mb-2" :style="{ color: avgLevelColor }">
             {{ avgLevelLabel }}
           </div>
-          <div class="text-xs text-zinc-500 uppercase tracking-wide">Avg. Level</div>
+          <div class="text-xs text-zinc-500 uppercase tracking-wider font-medium">Avg. Level</div>
         </div>
       </UCard>
     </div>
@@ -23,31 +23,33 @@
     <!-- Level Distribution -->
     <UCard class="overflow-hidden">
       <template #header>
-        <h3 class="font-semibold flex items-center gap-2">
-          <UIcon name="i-lucide-bar-chart-3" class="text-zinc-500" />
+        <h3 class="font-bold text-lg flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <UIcon name="i-lucide-bar-chart-3" class="text-blue-400" />
+          </div>
           Skill Distribution
         </h3>
       </template>
 
-      <div class="space-y-3">
+      <div class="space-y-4">
         <div
           v-for="level in distribution"
           :key="level.level"
-          class="flex items-center gap-3"
+          class="flex items-center gap-4"
         >
-          <div class="w-20 text-xs text-zinc-500 truncate">
+          <div class="w-24 text-sm font-medium text-zinc-400 truncate">
             {{ level.shortLabel || level.label.split(' ')[0] }}
           </div>
-          <div class="flex-1 bg-zinc-800 rounded-full h-2.5 overflow-hidden">
+          <div class="flex-1 bg-zinc-800/80 rounded-full h-3 overflow-hidden">
             <div
-              class="h-full rounded-full transition-all duration-500"
+              class="h-full rounded-full transition-all duration-700 ease-out"
               :style="{
                 width: `${totalTopics > 0 ? (level.count / totalTopics) * 100 : 0}%`,
                 backgroundColor: getColorHex(level.color)
               }"
             />
           </div>
-          <div class="w-6 text-xs text-right text-zinc-400 font-medium">{{ level.count }}</div>
+          <div class="w-8 text-sm text-right text-zinc-300 font-semibold tabular-nums">{{ level.count }}</div>
         </div>
       </div>
     </UCard>
@@ -56,23 +58,25 @@
     <UCard v-if="weakTopics.length > 0" class="overflow-hidden">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="font-semibold text-orange-400 flex items-center gap-2">
-            <UIcon name="i-lucide-alert-triangle" />
+          <h3 class="font-bold text-lg text-orange-400 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <UIcon name="i-lucide-alert-triangle" class="text-orange-400" />
+            </div>
             Areas to Improve
           </h3>
-          <UBadge color="warning" variant="soft" class="rounded-lg">{{ weakTopics.length }}</UBadge>
+          <UBadge color="warning" variant="soft" size="lg" class="rounded-xl font-semibold">{{ weakTopics.length }}</UBadge>
         </div>
       </template>
 
-      <div class="space-y-2 max-h-48 overflow-y-auto">
+      <div class="space-y-2 max-h-56 overflow-y-auto -mr-2 pr-2">
         <div
           v-for="topic in weakTopics"
           :key="topic.id"
-          class="flex items-center justify-between px-3 py-2.5 bg-zinc-800/50 rounded-xl"
+          class="flex items-center justify-between px-4 py-3 bg-zinc-800/60 rounded-xl border border-zinc-700/40 hover:border-zinc-600/60 transition-colors"
         >
-          <span class="text-sm">{{ topic.name }}</span>
+          <span class="font-medium">{{ topic.name }}</span>
           <span
-            class="text-xs font-medium px-2 py-0.5 rounded-md"
+            class="text-xs font-bold px-3 py-1 rounded-lg"
             :style="{ backgroundColor: getColorHex(CONFIDENCE_LEVELS[topic.level].color) + '20', color: getColorHex(CONFIDENCE_LEVELS[topic.level].color) }"
           >
             Level {{ topic.level }}
@@ -85,27 +89,30 @@
     <UCard v-if="unassessedTopics.length > 0" class="overflow-hidden">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="font-semibold text-zinc-400 flex items-center gap-2">
-            <UIcon name="i-lucide-help-circle" />
+          <h3 class="font-bold text-lg text-zinc-400 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+              <UIcon name="i-lucide-help-circle" class="text-zinc-500" />
+            </div>
             Not Yet Assessed
           </h3>
-          <UBadge variant="soft" color="neutral" class="rounded-lg">{{ unassessedTopics.length }}</UBadge>
+          <UBadge variant="soft" color="neutral" size="lg" class="rounded-xl font-semibold">{{ unassessedTopics.length }}</UBadge>
         </div>
       </template>
 
-      <div class="space-y-2 max-h-48 overflow-y-auto">
+      <div class="space-y-2 max-h-56 overflow-y-auto -mr-2 pr-2">
         <div
           v-for="topic in unassessedTopics"
           :key="topic.id"
-          class="flex items-center justify-between px-3 py-2.5 bg-zinc-800/50 rounded-xl"
+          class="flex items-center justify-between px-4 py-3 bg-zinc-800/60 rounded-xl border border-zinc-700/40 hover:border-zinc-600/60 transition-colors"
         >
-          <span class="text-sm text-zinc-400">{{ topic.name }}</span>
+          <span class="text-zinc-400 font-medium">{{ topic.name }}</span>
           <UButton
-            size="xs"
+            size="sm"
             variant="soft"
-            class="rounded-lg"
+            class="rounded-xl font-medium"
             @click="$emit('assessTopic', topic.id)"
           >
+            <UIcon name="i-lucide-target" class="mr-1.5" />
             Assess
           </UButton>
         </div>
@@ -116,43 +123,47 @@
     <UCard class="overflow-hidden">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="font-semibold flex items-center gap-2">
-            <UIcon name="i-lucide-list" class="text-zinc-500" />
+          <h3 class="font-bold text-lg flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+              <UIcon name="i-lucide-list" class="text-zinc-400" />
+            </div>
             All Topics
           </h3>
           <UButton
-            size="xs"
+            size="sm"
             variant="ghost"
             color="neutral"
-            class="rounded-lg"
+            class="rounded-xl"
             @click="showAll = !showAll"
           >
             {{ showAll ? 'Collapse' : 'Expand' }}
-            <UIcon :name="showAll ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="ml-1" />
+            <UIcon :name="showAll ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="ml-1.5" />
           </UButton>
         </div>
       </template>
 
-      <div v-if="showAll" class="space-y-2 max-h-96 overflow-y-auto">
+      <div v-if="showAll" class="space-y-2 max-h-[400px] overflow-y-auto -mr-2 pr-2">
         <div
           v-for="topic in allTopicsWithLevel"
           :key="topic.id"
-          class="flex items-center justify-between px-3 py-2.5 bg-zinc-800/50 rounded-xl"
+          class="flex items-center justify-between px-4 py-3 bg-zinc-800/60 rounded-xl border border-zinc-700/40"
         >
-          <span class="text-sm">{{ topic.name }}</span>
+          <span class="font-medium">{{ topic.name }}</span>
           <span
             v-if="topic.level !== null"
-            class="text-xs font-medium px-2 py-0.5 rounded-md"
+            class="text-xs font-bold px-3 py-1 rounded-lg"
             :style="{ backgroundColor: getColorHex(CONFIDENCE_LEVELS[topic.level].color) + '20', color: getColorHex(CONFIDENCE_LEVELS[topic.level].color) }"
           >
             {{ CONFIDENCE_LEVELS[topic.level].shortLabel || CONFIDENCE_LEVELS[topic.level].label.split(' ')[0] }}
           </span>
-          <span v-else class="text-xs text-zinc-600">—</span>
+          <span v-else class="text-sm text-zinc-600 font-medium">—</span>
         </div>
       </div>
-      <p v-else class="text-sm text-zinc-500 text-center py-4">
-        {{ technology?.topics.length }} topics total
-      </p>
+      <div v-else class="text-center py-6">
+        <p class="text-zinc-500">
+          <span class="text-zinc-300 font-semibold">{{ technology?.topics.length }}</span> topics total
+        </p>
+      </div>
     </UCard>
   </div>
 </template>

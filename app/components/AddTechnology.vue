@@ -1,16 +1,20 @@
 <template>
   <div class="add-technology animate-fade-in">
     <UCard class="overflow-hidden">
-      <div class="space-y-5">
+      <div class="space-y-6">
         <!-- Technology Name -->
         <UFormField label="Technology Name" required>
           <UInput
             v-model="name"
             placeholder="e.g., Nuxt, React, Vue..."
-            size="lg"
+            size="xl"
             class="rounded-xl"
             :disabled="isLoading"
-          />
+          >
+            <template #leading>
+              <UIcon name="i-lucide-code-2" class="text-zinc-500" />
+            </template>
+          </UInput>
         </UFormField>
 
         <!-- URL Input -->
@@ -18,46 +22,57 @@
           <UInput
             v-model="url"
             placeholder="https://docs.example.com/api"
-            size="lg"
+            size="xl"
             class="rounded-xl"
             :disabled="isLoading"
-          />
+          >
+            <template #leading>
+              <UIcon name="i-lucide-link" class="text-zinc-500" />
+            </template>
+          </UInput>
         </UFormField>
 
         <!-- Fetch Button -->
         <UButton
           v-if="url"
           block
-          size="lg"
+          size="xl"
           variant="soft"
           :loading="isLoading"
           :disabled="!url || !name"
-          class="rounded-xl h-12"
+          class="rounded-xl h-14 font-medium"
           @click="fetchStructure"
         >
-          <UIcon name="i-lucide-download" class="mr-2" />
+          <UIcon name="i-lucide-download" class="mr-2 text-lg" />
           Fetch Documentation Structure
         </UButton>
 
         <!-- Manual Entry Section -->
         <div class="pt-2">
-          <USeparator label="OR ADD MANUALLY" />
+          <div class="divider-gradient my-6" />
+          <p class="text-center text-xs text-zinc-500 font-medium tracking-wide uppercase -mt-9 mb-4">
+            <span class="bg-zinc-900 px-4">Or Add Manually</span>
+          </p>
         </div>
 
         <!-- Manual Topic Entry -->
-        <div class="space-y-3">
-          <div class="flex gap-2">
+        <div class="space-y-4">
+          <div class="flex gap-3">
             <UInput
               v-model="newTopic"
               placeholder="Topic name (e.g., useAsyncData)"
               class="flex-1 rounded-xl"
-              size="lg"
+              size="xl"
               @keyup.enter="addManualTopic"
-            />
+            >
+              <template #leading>
+                <UIcon name="i-lucide-hash" class="text-zinc-500" />
+              </template>
+            </UInput>
             <UButton
               icon="i-lucide-plus"
-              size="lg"
-              class="rounded-xl"
+              size="xl"
+              class="rounded-xl w-14"
               :disabled="!newTopic.trim()"
               @click="addManualTopic"
             />
@@ -69,16 +84,18 @@
               <div
                 v-for="(topic, index) in manualTopics"
                 :key="topic"
-                class="flex items-center gap-2 px-3 py-2.5 bg-zinc-800/50 rounded-xl border border-zinc-700/50"
+                class="flex items-center gap-3 px-4 py-3 bg-zinc-800/60 rounded-xl border border-zinc-700/40 group hover:border-zinc-600/60 transition-all"
               >
-                <UIcon name="i-lucide-hash" class="text-zinc-500 text-sm" />
-                <span class="flex-1 text-sm">{{ topic }}</span>
+                <div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                  <UIcon name="i-lucide-hash" class="text-primary-400 text-sm" />
+                </div>
+                <span class="flex-1 text-sm font-medium">{{ topic }}</span>
                 <UButton
                   icon="i-lucide-x"
                   variant="ghost"
                   color="error"
                   size="xs"
-                  class="rounded-lg opacity-60 hover:opacity-100"
+                  class="rounded-lg opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity"
                   @click="manualTopics.splice(index, 1)"
                 />
               </div>
@@ -87,14 +104,14 @@
         </div>
 
         <!-- Fetched Topics Preview -->
-        <div v-if="fetchedTopics.length > 0" class="space-y-3">
+        <div v-if="fetchedTopics.length > 0" class="space-y-4">
           <div class="flex items-center justify-between">
             <p class="text-sm text-zinc-400">
-              Found <span class="text-zinc-200 font-medium">{{ fetchedTopics.length }}</span> topics
+              Found <span class="text-white font-semibold">{{ fetchedTopics.length }}</span> topics
             </p>
             <UButton
               variant="ghost"
-              size="xs"
+              size="sm"
               class="rounded-lg"
               @click="toggleAllFetched"
             >
@@ -102,11 +119,11 @@
             </UButton>
           </div>
 
-          <div class="max-h-64 overflow-y-auto space-y-1 pr-1">
+          <div class="max-h-72 overflow-y-auto space-y-1 pr-2 -mr-2">
             <label
               v-for="topic in fetchedTopics"
               :key="topic.path"
-              class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-zinc-800/50 transition-colors"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer hover:bg-zinc-800/50 transition-colors border border-transparent hover:border-zinc-700/40"
             >
               <UCheckbox v-model="topic.selected" />
               <span class="text-sm">{{ topic.name }}</span>
@@ -130,16 +147,18 @@
         <UButton
           v-if="canSave"
           block
-          size="lg"
-          class="rounded-xl h-12 font-medium"
+          size="xl"
+          class="rounded-xl h-14 font-semibold gradient-primary border-0"
           @click="saveTechnology"
         >
-          <UIcon name="i-lucide-check" class="mr-2" />
+          <UIcon name="i-lucide-check" class="mr-2 text-lg" />
           Save Technology ({{ totalTopics }} topic{{ totalTopics !== 1 ? 's' : '' }})
         </UButton>
-        <p v-else class="text-center text-sm text-zinc-500">
-          Add a name and at least one topic to save
-        </p>
+        <div v-else class="text-center py-2">
+          <p class="text-sm text-zinc-500">
+            Add a name and at least one topic to save
+          </p>
+        </div>
       </template>
     </UCard>
   </div>

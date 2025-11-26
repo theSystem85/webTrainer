@@ -1,15 +1,17 @@
 <template>
-  <div class="settings-panel animate-fade-in space-y-4">
+  <div class="settings-panel animate-fade-in space-y-5">
     <!-- API Key Section -->
     <UCard class="overflow-hidden">
       <template #header>
-        <h3 class="font-semibold flex items-center gap-2">
-          <UIcon name="i-lucide-key" class="text-zinc-500" />
+        <h3 class="font-bold text-lg flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+            <UIcon name="i-lucide-key" class="text-primary-400" />
+          </div>
           OpenAI API Key
         </h3>
       </template>
 
-      <div class="space-y-4">
+      <div class="space-y-5">
         <UFormField
           description="Your key is stored locally and never sent to our servers."
         >
@@ -17,16 +19,19 @@
             :model-value="maskedKey"
             :type="showKey ? 'text' : 'password'"
             placeholder="sk-..."
-            size="lg"
+            size="xl"
             class="rounded-xl"
             @update:model-value="handleKeyInput"
           >
+            <template #leading>
+              <UIcon name="i-lucide-key" class="text-zinc-500" />
+            </template>
             <template #trailing>
               <UButton
                 :icon="showKey ? 'i-lucide-eye-off' : 'i-lucide-eye'"
                 variant="ghost"
                 color="neutral"
-                size="xs"
+                size="sm"
                 class="rounded-lg"
                 @click="showKey = !showKey"
               />
@@ -41,7 +46,7 @@
           class="rounded-xl"
           icon="i-lucide-check-circle"
         >
-          API key configured. LLM features enabled.
+          <span class="font-medium">API key configured.</span> LLM features enabled.
         </UAlert>
       </div>
     </UCard>
@@ -49,22 +54,24 @@
     <!-- Text-to-Speech Section -->
     <UCard class="overflow-hidden">
       <template #header>
-        <h3 class="font-semibold flex items-center gap-2">
-          <UIcon name="i-lucide-volume-2" class="text-zinc-500" />
+        <h3 class="font-bold text-lg flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <UIcon name="i-lucide-volume-2" class="text-blue-400" />
+          </div>
           Text-to-Speech
         </h3>
       </template>
 
-      <div class="space-y-5">
-        <div class="flex items-center justify-between">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between p-4 bg-zinc-800/40 rounded-xl border border-zinc-700/40">
           <div>
-            <div class="font-medium">Enable TTS</div>
+            <div class="font-semibold">Enable TTS</div>
             <div class="text-sm text-zinc-500">Read quiz questions aloud</div>
           </div>
           <USwitch v-model="settings.ttsEnabled" />
         </div>
 
-        <div v-if="settings.ttsEnabled" class="space-y-4 pt-2">
+        <div v-if="settings.ttsEnabled" class="space-y-5 animate-fade-in">
           <UFormField label="Voice">
             <USelectMenu
               v-model="settings.ttsVoice"
@@ -75,8 +82,8 @@
           </UFormField>
 
           <UFormField label="Speed">
-            <div class="flex items-center gap-4">
-              <span class="text-sm text-zinc-500">Slow</span>
+            <div class="flex items-center gap-4 mt-2">
+              <span class="text-sm text-zinc-500 w-10">Slow</span>
               <input
                 v-model.number="settings.ttsRate"
                 type="range"
@@ -85,19 +92,19 @@
                 step="0.1"
                 class="flex-1 slider-modern bg-zinc-700"
               />
-              <span class="text-sm text-zinc-500">Fast</span>
-              <span class="text-sm font-medium w-10 text-right">{{ settings.ttsRate.toFixed(1) }}x</span>
+              <span class="text-sm text-zinc-500 w-10">Fast</span>
+              <span class="text-sm font-bold w-14 text-right tabular-nums bg-zinc-800 px-2 py-1 rounded-lg">{{ settings.ttsRate.toFixed(1) }}x</span>
             </div>
           </UFormField>
 
           <UButton
             variant="soft"
             color="neutral"
-            size="sm"
+            size="lg"
             class="rounded-xl"
             @click="testSpeech"
           >
-            <UIcon name="i-lucide-play" class="mr-1" />
+            <UIcon name="i-lucide-play" class="mr-2" />
             Test Voice
           </UButton>
         </div>
@@ -107,8 +114,10 @@
     <!-- Data Management Section -->
     <UCard class="overflow-hidden">
       <template #header>
-        <h3 class="font-semibold flex items-center gap-2">
-          <UIcon name="i-lucide-database" class="text-zinc-500" />
+        <h3 class="font-bold text-lg flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+            <UIcon name="i-lucide-database" class="text-zinc-400" />
+          </div>
           Data Management
         </h3>
       </template>
@@ -118,10 +127,11 @@
           variant="soft"
           color="neutral"
           block
-          class="rounded-xl h-11"
+          size="xl"
+          class="rounded-xl h-14 font-medium"
           @click="exportData"
         >
-          <UIcon name="i-lucide-download" class="mr-2" />
+          <UIcon name="i-lucide-download" class="mr-3 text-lg" />
           Export All Data
         </UButton>
 
@@ -129,10 +139,11 @@
           variant="soft"
           color="neutral"
           block
-          class="rounded-xl h-11"
+          size="xl"
+          class="rounded-xl h-14 font-medium"
           @click="triggerImport"
         >
-          <UIcon name="i-lucide-upload" class="mr-2" />
+          <UIcon name="i-lucide-upload" class="mr-3 text-lg" />
           Import Data
         </UButton>
         <input
@@ -143,16 +154,17 @@
           @change="handleImport"
         />
 
-        <USeparator class="my-4" />
+        <div class="divider-gradient my-6" />
 
         <UButton
           color="error"
           variant="soft"
           block
-          class="rounded-xl h-11"
+          size="xl"
+          class="rounded-xl h-14 font-medium"
           @click="confirmClear"
         >
-          <UIcon name="i-lucide-trash-2" class="mr-2" />
+          <UIcon name="i-lucide-trash-2" class="mr-3 text-lg" />
           Clear All Data
         </UButton>
       </div>
@@ -162,23 +174,26 @@
     <UModal v-model="showClearConfirm">
       <UCard>
         <template #header>
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-              <UIcon name="i-lucide-alert-triangle" class="text-xl text-red-400" />
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center ring-1 ring-red-500/20">
+              <UIcon name="i-lucide-alert-triangle" class="text-2xl text-red-400" />
             </div>
-            <h3 class="font-semibold text-lg">Clear All Data?</h3>
+            <div>
+              <h3 class="font-bold text-lg">Clear All Data?</h3>
+              <p class="text-sm text-zinc-500">This action cannot be undone</p>
+            </div>
           </div>
         </template>
-        <p class="text-zinc-400">
+        <p class="text-zinc-300 leading-relaxed">
           This will permanently delete all your technologies, assessments, and quiz history.
-          <span class="text-zinc-200">This action cannot be undone.</span>
         </p>
         <template #footer>
           <div class="flex gap-3 justify-end">
-            <UButton variant="ghost" color="neutral" class="rounded-xl" @click="showClearConfirm = false">
+            <UButton variant="ghost" color="neutral" size="lg" class="rounded-xl" @click="showClearConfirm = false">
               Cancel
             </UButton>
-            <UButton color="error" class="rounded-xl" @click="clearData">
+            <UButton color="error" size="lg" class="rounded-xl font-medium" @click="clearData">
+              <UIcon name="i-lucide-trash-2" class="mr-2" />
               Delete Everything
             </UButton>
           </div>
