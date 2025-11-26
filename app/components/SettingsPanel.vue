@@ -12,6 +12,7 @@
       </template>
 
       <div class="space-y-5">
+        <form @submit.prevent>
         <UFormField
           description="Your key is stored locally and never sent to our servers."
         >
@@ -21,6 +22,7 @@
             placeholder="sk-..."
             size="xl"
             class="rounded-xl"
+            autocomplete="off"
             @update:model-value="handleKeyInput"
           >
             <template #leading>
@@ -38,6 +40,7 @@
             </template>
           </UInput>
         </UFormField>
+        </form>
 
         <UAlert
           v-if="settings.openaiApiKey"
@@ -63,6 +66,7 @@
       </template>
 
       <div class="space-y-6">
+        <ClientOnly>
         <div class="flex items-center justify-between p-4 bg-zinc-800/40 rounded-xl border border-zinc-700/40">
           <div>
             <div class="font-semibold">Enable TTS</div>
@@ -108,6 +112,11 @@
             Test Voice
           </UButton>
         </div>
+
+          <template #fallback>
+            <div class="h-32 bg-zinc-800/50 rounded-xl animate-pulse" />
+          </template>
+        </ClientOnly>
       </div>
     </UCard>
 

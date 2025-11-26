@@ -1,5 +1,6 @@
 <template>
   <div class="technology-list animate-fade-in">
+    <ClientOnly>
     <!-- Empty State -->
     <div v-if="technologies.length === 0" class="flex flex-col items-center justify-center py-20 px-6">
       <div class="relative mb-8">
@@ -85,6 +86,13 @@
         </div>
       </UCard>
     </div>
+
+      <template #fallback>
+        <div class="space-y-4">
+          <div v-for="i in 3" :key="i" class="h-24 bg-zinc-800/50 rounded-2xl animate-pulse" />
+        </div>
+      </template>
+    </ClientOnly>
 
     <!-- Delete Confirmation Modal -->
     <UModal v-model="showDeleteConfirm">
